@@ -1,0 +1,25 @@
+server:
+  servlet:
+    context-path: /
+    encoding:
+      charset: UTF-8
+      force: true
+      force-response: true
+  tomcat:
+    accesslog:
+      encoding: UTF-8
+  port: 8080
+
+spring:
+  mvc:
+    throw-exception-if-no-handler-found: true
+  resources:
+    add-mappings: false
+  jackson:
+    locale: zh
+
+  security:
+    anon-access-list:
+      - /system/login
+      - /system/logout
+
