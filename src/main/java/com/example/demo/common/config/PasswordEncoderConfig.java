@@ -38,7 +38,7 @@ public class PasswordEncoderConfig {
      * @return
      */
     @Bean(name = "delegatingPasswordEncoder")
-    public PasswordEncoder delegatingPasswordEncoder2() {
+    public PasswordEncoder passwordEncoder() {
         String idForEncode = "bcrypt";
         Map idToPasswordEncoder = new HashMap<>(4);
         idToPasswordEncoder.put(idForEncode, new BCryptPasswordEncoder());

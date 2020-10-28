@@ -16,21 +16,6 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 @Configuration
 public class HandlerConfig {
 
-//    /**
-//     * 认证成功处理器:开启登录使用，自定义登录则不使用
-//     *
-//     * @return
-//     */
-//    @Bean
-//    public AuthenticationSuccessHandler authenticationSuccessHandler() {
-//        return (request, response, authentication) -> {
-//            response.setCharacterEncoding("UTF-8");
-//            response.setContentType("application/json");
-//            response.getWriter().write(JSONUtil.toJsonStr(Result.success("登录成功")));
-//            response.getWriter().flush();
-//        };
-//    }
-
     /**
      * 访问拒绝处理器：无权访问
      *
@@ -60,4 +45,19 @@ public class HandlerConfig {
             response.getWriter().flush();
         };
     }
+
+    //    /**
+//     * 认证成功处理器:开启登录使用，自定义登录则不使用
+//     *
+//     * @return
+//     */
+//    @Bean
+//    public AuthenticationSuccessHandler authenticationSuccessHandler() {
+//        return (request, response, authentication) -> {
+//            response.setCharacterEncoding("UTF-8");
+//            response.setContentType("application/json");
+//            response.getWriter().write(JSONUtil.toJsonStr(Result.success("登录成功")));
+//            response.getWriter().flush();
+//        };
+//    }
 }

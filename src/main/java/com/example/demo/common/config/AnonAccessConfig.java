@@ -16,5 +16,8 @@ import java.util.List;
 @ConfigurationProperties(prefix = "spring.security")
 public class AnonAccessConfig {
 
+    /**
+     * 匿名访问权限列表
+     */
     private List<String> anonAccessList;
 }

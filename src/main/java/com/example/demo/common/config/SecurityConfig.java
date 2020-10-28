@@ -3,6 +3,7 @@ package com.example.demo.common.config;
 import cn.hutool.core.util.ArrayUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -25,14 +26,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final PasswordEncoder passwordEncoder;
     private final AnonAccessConfig anonAccessConfig;
-    //private final AuthenticationSuccessHandler authenticationSuccessHandler;
     private final AccessDeniedHandler accessDeniedHandler;
     private final AuthenticationEntryPoint authenticationEntryPoint;
 
     @Autowired
     public SecurityConfig(@Qualifier("delegatingPasswordEncoder") PasswordEncoder passwordEncoder,
-                          AnonAccessConfig anonAccessConfig,
                           AccessDeniedHandler accessDeniedHandler,
+                          AnonAccessConfig anonAccessConfig,
                           AuthenticationEntryPoint authenticationEntryPoint) {
         this.passwordEncoder = passwordEncoder;
         this.anonAccessConfig = anonAccessConfig;
@@ -70,8 +70,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .exceptionHandling()
                 .accessDeniedHandler(accessDeniedHandler)
                 .authenticationEntryPoint(authenticationEntryPoint)
-        ;
-        http.csrf().disable()
+                .and()
+                .csrf()
+                .and()
                 .requestCache().disable();
     }
 
