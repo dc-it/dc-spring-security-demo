@@ -31,7 +31,7 @@ public class Result<T> {
      * @param data 获取的数据
      */
     public static <T> Result<T> success(T data) {
-        return new Result<T>(0, "成功", data);
+        return new Result<T>(0, "success", data);
     }
 
     /**

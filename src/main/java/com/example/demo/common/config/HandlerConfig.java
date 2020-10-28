@@ -5,7 +5,6 @@ import com.example.demo.common.api.Result;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.access.AccessDeniedHandler;
 
 /**
  * 安全处理器配置
@@ -15,21 +14,6 @@ import org.springframework.security.web.access.AccessDeniedHandler;
  */
 @Configuration
 public class HandlerConfig {
-
-    /**
-     * 访问拒绝处理器：无权访问
-     *
-     * @return
-     */
-    @Bean
-    public AccessDeniedHandler accessDeniedHandler() {
-        return (request, response, authentication) -> {
-            response.setCharacterEncoding("UTF-8");
-            response.setContentType("application/json");
-            response.getWriter().write(JSONUtil.toJsonStr(Result.failure("无权访问")));
-            response.getWriter().flush();
-        };
-    }
 
     /**
      * 认证处理器：未登录或登录过期
@@ -46,7 +30,23 @@ public class HandlerConfig {
         };
     }
 
-    //    /**
+//   全局异常加了该异常拦截
+//    /**
+//     * 访问拒绝处理器：无权访问
+//     *
+//     * @return
+//     */
+//    @Bean
+//    public AccessDeniedHandler accessDeniedHandler() {
+//        return (request, response, authentication) -> {
+//            response.setCharacterEncoding("UTF-8");
+//            response.setContentType("application/json");
+//            response.getWriter().write(JSONUtil.toJsonStr(Result.failure("无权访问")));
+//            response.getWriter().flush();
+//        };
+//    }
+
+//    /**
 //     * 认证成功处理器:开启登录使用，自定义登录则不使用
 //     *
 //     * @return

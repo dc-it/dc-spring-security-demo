@@ -1,18 +1,24 @@
 package com.example.demo.common.config;
 
 import cn.hutool.core.util.ArrayUtil;
+import com.example.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * 安全配置
@@ -26,18 +32,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final PasswordEncoder passwordEncoder;
     private final AnonAccessConfig anonAccessConfig;
-    private final AccessDeniedHandler accessDeniedHandler;
     private final AuthenticationEntryPoint authenticationEntryPoint;
+    private final TokenFilter tokenFilter;
+    private final UserDetailsService userDetailsService;
 
     @Autowired
-    public SecurityConfig(@Qualifier("delegatingPasswordEncoder") PasswordEncoder passwordEncoder,
-                          AccessDeniedHandler accessDeniedHandler,
+    public SecurityConfig(PasswordEncoder passwordEncoder,
                           AnonAccessConfig anonAccessConfig,
-                          AuthenticationEntryPoint authenticationEntryPoint) {
+                          AuthenticationEntryPoint authenticationEntryPoint,
+                          TokenFilter tokenFilter,
+                          @Qualifier("securityUserDetailsService") UserDetailsService userDetailsService) {
         this.passwordEncoder = passwordEncoder;
         this.anonAccessConfig = anonAccessConfig;
-        this.accessDeniedHandler = accessDeniedHandler;
         this.authenticationEntryPoint = authenticationEntryPoint;
+        this.tokenFilter = tokenFilter;
+        this.userDetailsService = userDetailsService;
     }
 
     /**
@@ -48,9 +57,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-                .passwordEncoder(passwordEncoder)
-                .withUser("user").password(passwordEncoder.encode("123456")).roles("USER");
+//        auth.inMemoryAuthentication()
+//                .passwordEncoder(passwordEncoder)
+//                .withUser("user").password(passwordEncoder.encode("123456")).roles("USER");
+        auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
     }
 
     /**
@@ -63,17 +73,31 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
+        http
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .csrf().disable() //非浏览器客服端的服务要禁用跨站请求伪装，csrf走cookie(a service that is used by non-browser clients, disable CSRF protection.)
+                .requestCache().disable()
+                .authorizeRequests()
                 .antMatchers(ArrayUtil.toArray(anonAccessConfig.getAnonAccessList(), String.class)).permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling()
-                .accessDeniedHandler(accessDeniedHandler)
                 .authenticationEntryPoint(authenticationEntryPoint)
                 .and()
-                .csrf()
-                .and()
-                .requestCache().disable();
+                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
     }
+
+//    @Bean
+//    @Override
+//    protected UserDetailsService userDetailsService() {
+//        return username -> {
+//            UserDetails userDetails = userService.loadUserByUsername(username);
+//            if(userDetails==null){
+//                throw new UsernameNotFoundException("账户不存在");
+//            }
+//            return userDetails;
+//        };
+//    }
 
 }
