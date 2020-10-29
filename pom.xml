@@ -19,9 +19,16 @@
         <hutool.version>5.4.0</hutool.version>
         <hibernate-validator.version>6.1.5.Final</hibernate-validator.version>
         <validation-api.version>2.0.1.Final</validation-api.version>
+        <nimbus-jose-jwt.version>8.16</nimbus-jose-jwt.version>
     </properties>
 
     <dependencies>
+        <!--JWT-->
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <version>${nimbus-jose-jwt.version}</version>
+        </dependency>
         <!--校验-->
         <dependency>
             <groupId>org.hibernate.validator</groupId>
