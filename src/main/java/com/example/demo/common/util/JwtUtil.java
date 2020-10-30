@@ -4,10 +4,7 @@ import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import com.example.demo.common.exception.BaseException;
 import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.AESDecrypter;
-import com.nimbusds.jose.crypto.AESEncrypter;
-import com.nimbusds.jose.crypto.MACSigner;
-import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.crypto.*;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -34,9 +31,6 @@ public class JwtUtil {
 
     @Value("${jwt.refresh-time}")
     private long refreshTime;
-
-    @Value("${jwt.secret}")
-    private String secret;
 
     @Value("${jwt.type}")
     private Integer type;
@@ -149,7 +143,7 @@ public class JwtUtil {
                 case 3:
                     EncryptedJWT parseEncryptedJwt = EncryptedJWT.parse(token);
                     //解密，不加密有效载荷获取不到，有效载荷被加密
-                    parseEncryptedJwt.decrypt(new AESDecrypter(secret.getBytes()));
+                    parseEncryptedJwt.decrypt(new RSADecrypter(new RSAKeyGenerator(RSAKeyGenerator.MIN_KEY_SIZE_BITS).generate()));
                     jwtClaimsSet = parseEncryptedJwt.getJWTClaimsSet();
                     break;
                 default:
@@ -174,7 +168,7 @@ public class JwtUtil {
         payloadBuilder.issueTime(new Date());
         payloadBuilder.expirationTime(getExpirationTime());
         EncryptedJWT encryptedJwt = new EncryptedJWT(headerBuilder.build(), payloadBuilder.build());
-        encryptedJwt.encrypt(new AESEncrypter(secret.getBytes()));
+        encryptedJwt.encrypt(new RSAEncrypter(new RSAKeyGenerator(RSAKeyGenerator.MIN_KEY_SIZE_BITS).generate()));
         return encryptedJwt.serialize();
     }
 

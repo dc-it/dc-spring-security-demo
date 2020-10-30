@@ -70,20 +70,20 @@ public class TokenFilter extends OncePerRequestFilter {
             if (StrUtil.isBlank(authorizationHeader)) {
                 throw new AccountExpiredException("未登录或登录过期");
             }
-            if(!jwtUtil.validToken(token) && !jwtUtil.isCanRefreshToken(token)){
+            if (!jwtUtil.validToken(token) && !jwtUtil.isCanRefreshToken(token)) {
                 throw new AccountExpiredException("未登录或登录过期");
             }
 
             String account = jwtUtil.getAccountFromToken(token);
 
-            if(StrUtil.isNotBlank(account) && SecurityContextHolder.getContext().getAuthentication()==null) {
+            if (StrUtil.isNotBlank(account) && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(account);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
 
-            response.setHeader(header, headerPrefix+" "+jwtUtil.refreshTokenIfCanRefresh(token));
+            response.setHeader(header, headerPrefix + " " + jwtUtil.refreshTokenIfCanRefresh(token));
         }
 
         filterChain.doFilter(request, response);
