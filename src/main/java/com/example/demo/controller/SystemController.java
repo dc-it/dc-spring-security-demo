@@ -1,19 +1,17 @@
 package com.example.demo.controller;
 
 import com.example.demo.common.api.Result;
+import com.example.demo.common.util.JwtUtil;
 import com.example.demo.dto.LoginFormDto;
-import com.example.demo.service.UserService;
+import com.example.demo.service.SystemService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 /**
  * 系统前端控制器
@@ -24,29 +22,23 @@ import javax.servlet.http.HttpServletResponse;
 @RequestMapping("/system")
 public class SystemController {
 
-    private final UserService userService;
-    public final PasswordEncoder passwordEncoder;
+    @Value("${jwt.header}")
+    private String header;
+    @Value("${jwt.header-prefix}")
+    private String headerPrefix;
+    private final SystemService systemService;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public SystemController(UserService userService, PasswordEncoder passwordEncoder) {
-        this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
+    public SystemController(SystemService systemService, JwtUtil jwtUtil) {
+        this.systemService = systemService;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/login")
     public Result<String> login(@RequestBody @Validated LoginFormDto loginFormDto, HttpServletResponse response) {
-
-        UserDetails userDetails = userService.loadUserByUsername(loginFormDto.getUsername());
-        if (userDetails == null) {
-            throw new UsernameNotFoundException("账户不存在");
-        }
-        if(!passwordEncoder.matches(loginFormDto.getPassword(),userDetails.getPassword())){
-            throw new BadCredentialsException("密码不正确");
-        }
-
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(loginFormDto.getUsername(), loginFormDto.getPassword());
-        SecurityContextHolder.getContext().setAuthentication(token);
-        response.setHeader("token", token.getPrincipal().toString());
+        systemService.login(loginFormDto);
+        response.setHeader(header, headerPrefix + " " + jwtUtil.createToken(Map.of("account", loginFormDto.getUsername())));
         return Result.success("登录成功");
     }
 

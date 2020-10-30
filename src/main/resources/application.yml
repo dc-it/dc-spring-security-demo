@@ -23,3 +23,11 @@ spring:
       - /system/login
       - /system/logout
 
+jwt:
+  header: Authorization #请求头
+  header-prefix: Bearer #请求头值前缀
+  secret: 6MNSobBRCHGIO0fS6MNSobBRCHGIO0fS #私钥
+  expiration-time: 600000 #过期时间，10分钟 10*60*1000
+  refresh-time: 600000 #刷新时间，过期后允许刷新的时间段
+  type: 2 #令牌类型：1-plain、2-signed、3-encrypted
+

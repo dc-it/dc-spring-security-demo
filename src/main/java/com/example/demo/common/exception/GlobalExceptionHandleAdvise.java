@@ -46,6 +46,12 @@ public class GlobalExceptionHandleAdvise {
         return Result.failure("接口404");
     }
 
+    @ExceptionHandler(BaseException.class)
+    public Result handleBaseException(BaseException e) {
+        log.error("业务异常：{}", e.getMessage());
+        return Result.failure(e.getMessage());
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public Result handleAccessDeniedException(AccessDeniedException e, HttpServletRequest request) {
         log.error("无权访问：{}", request.getRequestURI());
