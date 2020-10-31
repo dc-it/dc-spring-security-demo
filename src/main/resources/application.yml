@@ -1,47 +1,4 @@
-server:
-  servlet:
-    context-path: /
-    encoding:
-      charset: UTF-8
-      force: true
-      force-response: true
-  tomcat:
-    accesslog:
-      encoding: UTF-8
-  port: 8080
-
 spring:
-  mvc:
-    throw-exception-if-no-handler-found: true
-  resources:
-    add-mappings: false
-  jackson:
-    locale: zh
-  security:
-    anon-access-list:
-      - /system/login
-      - /system/logout
-
-  redis:
-    host: 182.92.202.79
-    port: 8001
-    password: ENC(lfIdNw/brdd5FMFxJrtUhJDdlPtEpGqvXhVS6W6NryZvCnHEUgJglbjLeah8DY08)
-    lettuce:
-      pool:
-        max-idle: 8
-        min-idle: 0
-        max-wait: -1ms
-        max-active: 8
-
-jwt:
-  header: Authorization #请求头
-  header-prefix: Bearer #请求头值前缀
-  #secret: 6MNSobBRCHGIO0fS6MNSobBRCHGIO0fS #私钥(框架生成)
-  expiration-time: 600000 #过期时间，10分钟 10*60*1000
-  refresh-time: 600000 #刷新时间，过期后允许刷新的时间段
-  type: 2 #令牌类型：1-plain、2-signed、3-encrypted
-
-jasypt:
-  encryptor:
-    password: 123456789
+  profiles:
+    active: dev
 
