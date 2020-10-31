@@ -1,4 +1,4 @@
-package com.example.demo.common.config;
+package com.example.demo.common.config.security;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;

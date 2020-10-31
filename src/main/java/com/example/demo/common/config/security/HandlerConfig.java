@@ -1,4 +1,4 @@
-package com.example.demo.common.config;
+package com.example.demo.common.config.security;
 
 import cn.hutool.json.JSONUtil;
 import com.example.demo.common.api.Result;
