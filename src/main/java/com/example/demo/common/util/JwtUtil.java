@@ -129,7 +129,7 @@ public class JwtUtil {
         String newToken = null;
         if (new Date().before(new Date(claims.getExpirationTime().getTime() + refreshTime))) {
             newToken = createToken(claims.getClaims());
-            log.info("账户{}登录过期，刷新令牌：{}", claims.getClaim("account"), newToken);
+            log.info("用户{}登录过期，刷新令牌：{}", claims.getClaim("account"), newToken);
 
             //删除旧令牌
             redisUtil.delete(token);

@@ -69,6 +69,7 @@ public class TokenFilter extends OncePerRequestFilter {
             String account = jwtUtil.getAccountFromToken(token);
 
             if (StrUtil.isNotBlank(account) && SecurityContextHolder.getContext().getAuthentication() == null) {
+                log.info("用户{}通过认证，持有令牌：{}", account, token);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(account);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
