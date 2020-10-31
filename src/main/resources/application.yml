@@ -23,7 +23,7 @@ spring:
       - /system/logout
 
   redis:
-    host: 182.92.202.68
+    host: 182.92.202.79
     port: 8001
     password: ENC(lfIdNw/brdd5FMFxJrtUhJDdlPtEpGqvXhVS6W6NryZvCnHEUgJglbjLeah8DY08)
     lettuce:

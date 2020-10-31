@@ -75,7 +75,7 @@ public class JwtUtil {
             }
 
             //缓存令牌白名单，有效期：令牌过期时间+令牌过期允许刷新时间
-            redisUtil.expire(token, "", Duration.ofMillis(expirationTime + refreshTime));
+            redisUtil.expire(token, "", Duration.ofMillis(getExpirationTime().getTime() + refreshTime));
 
             return token;
         } catch (Exception e) {
@@ -88,9 +88,9 @@ public class JwtUtil {
     /**
      * 验证令牌是否有效
      * <p>
-     * 规则：
-     * 1、刷新时间之前
-     * 2、redis缓存白名单有
+     * 有效规则：
+     * 1、未到刷新截至时间
+     * 2、redis缓存白名单存在
      *
      * @param token 令牌
      * @return
@@ -146,7 +146,9 @@ public class JwtUtil {
      * @param token 令牌
      */
     public void removeFromWhiteList(final String token) {
-        redisUtil.delete(token);
+        if (redisUtil.exist(token)) {
+            redisUtil.delete(token);
+        }
     }
 
     /**
