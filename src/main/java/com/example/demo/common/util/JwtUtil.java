@@ -23,6 +23,9 @@ import java.util.Map;
 
 /**
  * jwt工具类
+ * <p>
+ * 注意：引入redis缓存登录令牌白名单，解决jwt退出问题。
+ * 但是，这违背了JWT这种Session会话机制不用把会话存服务器端的策略。
  *
  * @author duchao
  */
