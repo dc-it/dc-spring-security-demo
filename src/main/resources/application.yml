@@ -21,6 +21,7 @@ spring:
     anon-access-list:
       - /system/login
       - /system/logout
+
   redis:
     host: 182.92.202.68
     port: 8001

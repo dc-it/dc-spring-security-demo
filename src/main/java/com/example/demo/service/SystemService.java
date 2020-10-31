@@ -45,4 +45,8 @@ public class SystemService {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginFormDto.getUsername(), loginFormDto.getPassword());
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
     }
+
+    public void logout(){
+
+    }
 }

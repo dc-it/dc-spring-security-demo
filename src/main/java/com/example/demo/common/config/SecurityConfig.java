@@ -86,6 +86,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticationEntryPoint(authenticationEntryPoint)
                 .and()
                 .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
+
     }
 
 //    @Bean

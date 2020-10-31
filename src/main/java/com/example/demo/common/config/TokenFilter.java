@@ -3,11 +3,10 @@ package com.example.demo.common.config;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.example.demo.common.util.JwtUtil;
-import com.example.demo.common.util.RedisUtil;
+import com.example.demo.common.util.WebUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,22 +33,18 @@ public class TokenFilter extends OncePerRequestFilter {
 
     private final AnonAccessConfig anonAccessConfig;
     private final UserDetailsService userDetailsService;
-    private final RedisUtil redisUtil;
     private final JwtUtil jwtUtil;
-    @Value("${jwt.header}")
-    private String header;
-    @Value("${jwt.header-prefix}")
-    private String headerPrefix;
+    private final WebUtil webUtil;
 
     @Autowired
     public TokenFilter(AnonAccessConfig anonAccessConfig,
                        @Qualifier("securityUserDetailsService") UserDetailsService userDetailsService,
                        JwtUtil jwtUtil,
-                       RedisUtil redisUtil) {
+                       WebUtil webUtil) {
         this.anonAccessConfig = anonAccessConfig;
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
-        this.redisUtil = redisUtil;
+        this.webUtil = webUtil;
     }
 
     /**
@@ -66,18 +61,8 @@ public class TokenFilter extends OncePerRequestFilter {
         request.setCharacterEncoding("UTF-8");
         if (CollectionUtil.isEmpty(anonAccessConfig.getAnonAccessList()) || !anonAccessConfig.getAnonAccessList().contains(request.getRequestURI())) {
 
-            String authorizationHeader = request.getHeader(header);
-            if (StrUtil.isBlank(authorizationHeader)) {
-                throw new AccountExpiredException("未登录或登录过期");
-            }
-            String token = authorizationHeader.substring(headerPrefix.length() + 1);
-            if (StrUtil.isBlank(token)) {
-                throw new AccountExpiredException("未登录或登录过期");
-            }
-            if (!jwtUtil.validToken(token) && !jwtUtil.isCanRefreshToken(token)) {
-                throw new AccountExpiredException("未登录或登录过期");
-            }
-            if (!redisUtil.exist(token)) {
+            String token = webUtil.getTokenFromRequestHeader();
+            if (StrUtil.isBlank(token) || !jwtUtil.validToken(token)) {
                 throw new AccountExpiredException("未登录或登录过期");
             }
 
@@ -90,7 +75,7 @@ public class TokenFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
 
-            response.setHeader(header, headerPrefix + " " + jwtUtil.refreshTokenIfCanRefresh(token));
+            webUtil.setTokenToResponseHeader(jwtUtil.refreshTokenIfCanRefresh(token));
         }
 
         filterChain.doFilter(request, response);

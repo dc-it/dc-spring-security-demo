@@ -87,13 +87,17 @@ public class JwtUtil {
 
     /**
      * 验证令牌是否有效
+     * <p>
+     * 规则：
+     * 1、刷新时间之前
+     * 2、redis缓存白名单有
      *
      * @param token 令牌
      * @return
      */
     public boolean validToken(final String token) {
         JWTClaimsSet claims = this.getClaims(token);
-        return new Date().before(claims.getExpirationTime());
+        return new Date().before(new Date(claims.getExpirationTime().getTime() + refreshTime)) && redisUtil.exist(token);
     }
 
     /**
@@ -106,17 +110,6 @@ public class JwtUtil {
         JWTClaimsSet claims = this.getClaims(token);
         Date currentDate = new Date();
         return claims.getExpirationTime().before(currentDate) && currentDate.before(new Date(claims.getExpirationTime().getTime() + refreshTime));
-    }
-
-    /**
-     * 获取账户
-     *
-     * @param token 令牌
-     * @return
-     */
-    public String getAccountFromToken(final String token) {
-        Object account = this.getClaims(token).getClaim("account");
-        return ObjectUtil.isNotEmpty(account) ? account.toString() : null;
     }
 
     /**
@@ -143,6 +136,28 @@ public class JwtUtil {
         }
 
         return newToken;
+    }
+
+    /**
+     * 移出白名单、主动失效
+     * <p>
+     * 注意：jwt这种session机制本身没有主动失效这么一说，只有到期过期
+     *
+     * @param token 令牌
+     */
+    public void removeFromWhiteList(final String token) {
+        redisUtil.delete(token);
+    }
+
+    /**
+     * 获取账户
+     *
+     * @param token 令牌
+     * @return
+     */
+    public String getAccountFromToken(final String token) {
+        Object account = this.getClaims(token).getClaim("account");
+        return ObjectUtil.isNotEmpty(account) ? account.toString() : null;
     }
 
     /**
