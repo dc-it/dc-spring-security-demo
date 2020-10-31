@@ -3,6 +3,7 @@ package com.example.demo.common.config;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.example.demo.common.util.JwtUtil;
+import com.example.demo.common.util.RedisUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,6 +34,7 @@ public class TokenFilter extends OncePerRequestFilter {
 
     private final AnonAccessConfig anonAccessConfig;
     private final UserDetailsService userDetailsService;
+    private final RedisUtil redisUtil;
     private final JwtUtil jwtUtil;
     @Value("${jwt.header}")
     private String header;
@@ -42,10 +44,12 @@ public class TokenFilter extends OncePerRequestFilter {
     @Autowired
     public TokenFilter(AnonAccessConfig anonAccessConfig,
                        @Qualifier("securityUserDetailsService") UserDetailsService userDetailsService,
-                       JwtUtil jwtUtil) {
+                       JwtUtil jwtUtil,
+                       RedisUtil redisUtil) {
         this.anonAccessConfig = anonAccessConfig;
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
+        this.redisUtil = redisUtil;
     }
 
     /**
@@ -67,10 +71,13 @@ public class TokenFilter extends OncePerRequestFilter {
                 throw new AccountExpiredException("未登录或登录过期");
             }
             String token = authorizationHeader.substring(headerPrefix.length() + 1);
-            if (StrUtil.isBlank(authorizationHeader)) {
+            if (StrUtil.isBlank(token)) {
                 throw new AccountExpiredException("未登录或登录过期");
             }
             if (!jwtUtil.validToken(token) && !jwtUtil.isCanRefreshToken(token)) {
+                throw new AccountExpiredException("未登录或登录过期");
+            }
+            if (!redisUtil.exist(token)) {
                 throw new AccountExpiredException("未登录或登录过期");
             }
 

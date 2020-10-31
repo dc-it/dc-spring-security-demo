@@ -1,15 +1,18 @@
 package com.example.demo.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.example.demo.common.api.Result;
 import com.example.demo.common.util.JwtUtil;
+import com.example.demo.common.util.RedisUtil;
 import com.example.demo.dto.LoginFormDto;
 import com.example.demo.service.SystemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
@@ -28,11 +31,13 @@ public class SystemController {
     private String headerPrefix;
     private final SystemService systemService;
     private final JwtUtil jwtUtil;
+    private final RedisUtil redisUtil;
 
     @Autowired
-    public SystemController(SystemService systemService, JwtUtil jwtUtil) {
+    public SystemController(SystemService systemService, JwtUtil jwtUtil, RedisUtil redisUtil) {
         this.systemService = systemService;
         this.jwtUtil = jwtUtil;
+        this.redisUtil = redisUtil;
     }
 
     @PostMapping("/login")
@@ -43,8 +48,16 @@ public class SystemController {
     }
 
     @GetMapping("/logout")
-    public Result<String> logout() {
-        SecurityContextHolder.clearContext();
+    public Result<String> logout(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader(header);
+        if (StrUtil.isBlank(authorizationHeader)) {
+            throw new AccountExpiredException("未登录或登录过期");
+        }
+        String token = authorizationHeader.substring(headerPrefix.length() + 1);
+        if (StrUtil.isBlank(token)) {
+            throw new AccountExpiredException("未登录或登录过期");
+        }
+        redisUtil.delete(token);
         return Result.success("退出成功");
     }
 }

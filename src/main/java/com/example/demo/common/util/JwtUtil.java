@@ -4,16 +4,20 @@ import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import com.example.demo.common.exception.BaseException;
 import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.*;
+import com.nimbusds.jose.crypto.RSADecrypter;
+import com.nimbusds.jose.crypto.RSAEncrypter;
+import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
 import com.nimbusds.jwt.SignedJWT;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 
@@ -35,6 +39,13 @@ public class JwtUtil {
     @Value("${jwt.type}")
     private Integer type;
 
+    private final RedisUtil redisUtil;
+
+    @Autowired
+    public JwtUtil(RedisUtil redisUtil) {
+        this.redisUtil = redisUtil;
+    }
+
     /**
      * 创建令牌
      *
@@ -45,6 +56,7 @@ public class JwtUtil {
         try {
             Assert.notEmpty(claims, "令牌参数不能为空");
 
+            //创建令牌
             String token = null;
             switch (type) {
                 case 1:
@@ -58,9 +70,14 @@ public class JwtUtil {
                     break;
                 default:
             }
+
+            //缓存令牌白名单，有效期：令牌过期时间+令牌过期允许刷新时间
+            redisUtil.expire(token, "", Duration.ofMillis(expirationTime + refreshTime));
+
             return token;
         } catch (Exception e) {
             log.debug("创建令牌异常：{}", e.getMessage());
+            e.printStackTrace();
             throw new BaseException("创建令牌异常");
         }
     }
@@ -112,11 +129,14 @@ public class JwtUtil {
             return token;
         }
 
-        //token过期并且在允许刷新时间范围内
+        //刷新令牌，令牌过期并且在允许刷新时间范围内
         String newToken = null;
         if (new Date().before(new Date(claims.getExpirationTime().getTime() + refreshTime))) {
             newToken = createToken(claims.getClaims());
             log.info("账户{}登录过期，刷新令牌：{}", claims.getClaim("account"), newToken);
+
+            //删除旧令牌
+            redisUtil.delete(token);
         }
 
         return newToken;
@@ -151,6 +171,7 @@ public class JwtUtil {
             return jwtClaimsSet;
         } catch (Exception e) {
             log.debug("令牌解析异常：{}", e.getMessage());
+            e.printStackTrace();
             throw new BaseException("令牌解析异常");
         }
     }
