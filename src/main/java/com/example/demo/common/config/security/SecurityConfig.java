@@ -14,6 +14,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.util.StringUtils;
 
 /**
  * 安全配置
@@ -68,20 +70,25 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .csrf().disable() //非浏览器客服端的服务要禁用跨站请求伪装，csrf走cookie(a service that is used by non-browser clients, disable CSRF protection.)
-                .requestCache().disable()
-                .authorizeRequests()
+        http.authorizeRequests()
                 .antMatchers(ArrayUtil.toArray(anonAccessConfig.getAnonAccessList(), String.class)).permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling()
                 .authenticationEntryPoint(authenticationEntryPoint)
                 .and()
-                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class);
-
+                .addFilterBefore(tokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) //会话配置
+                .and().csrf().disable() //非浏览器客服端的服务要禁用跨站请求伪装，csrf走cookie(a service that is used by non-browser clients, disable CSRF protection.)
+                .cors().disable() //跨域
+                .headers() //请求头配置，指导浏览器行为配置
+                .cacheControl() //缓存控制
+                .and().contentTypeOptions() //浏览器内容类型嗅探
+                .and().httpStrictTransportSecurity() //浏览器请求https安全传输
+                .and().frameOptions() //frame框架嵌入
+                .and().xssProtection() //跨站脚本攻击
+                .and().referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.ORIGIN_WHEN_CROSS_ORIGIN) // 访问来源
+        ;
     }
 
 //    @Bean
@@ -95,5 +102,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //            return userDetails;
 //        };
 //    }
-
 }

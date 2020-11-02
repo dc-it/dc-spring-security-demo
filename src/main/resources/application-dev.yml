@@ -19,6 +19,8 @@ spring:
     add-mappings: false
   jackson:
     locale: zh
+    time-zone: GMT+8
+
   security:
     anon-access-list:
       - /system/login
