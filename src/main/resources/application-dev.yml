@@ -5,6 +5,7 @@ server:
       charset: UTF-8
       force: true
       force-response: true
+      force-request: true
   tomcat:
     accesslog:
       encoding: UTF-8

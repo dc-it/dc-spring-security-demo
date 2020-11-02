@@ -58,7 +58,6 @@ public class TokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         //请求处理
-        request.setCharacterEncoding("UTF-8");
         if (CollectionUtil.isEmpty(anonAccessConfig.getAnonAccessList()) || !anonAccessConfig.getAnonAccessList().contains(request.getRequestURI())) {
 
             String token = webUtil.getTokenFromRequestHeader();
@@ -82,6 +81,5 @@ public class TokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
 
         //响应处理
-        response.setCharacterEncoding("UTF-8");
     }
 }
