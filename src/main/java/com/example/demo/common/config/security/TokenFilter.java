@@ -7,6 +7,7 @@ import com.example.demo.common.util.WebUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,16 +36,19 @@ public class TokenFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
     private final WebUtil webUtil;
+    private final Environment environment;
 
     @Autowired
     public TokenFilter(AnonAccessConfig anonAccessConfig,
                        @Qualifier("securityUserDetailsService") UserDetailsService userDetailsService,
                        JwtUtil jwtUtil,
-                       WebUtil webUtil) {
+                       WebUtil webUtil,
+                       Environment environment) {
         this.anonAccessConfig = anonAccessConfig;
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
         this.webUtil = webUtil;
+        this.environment = environment;
     }
 
     /**
@@ -56,6 +60,8 @@ public class TokenFilter extends OncePerRequestFilter {
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
+        log.info("***********客户{}消费服务{}**********",webUtil.getClientIp(),environment.getProperty("spring.application.name"));
 
         //请求处理
         if (CollectionUtil.isEmpty(anonAccessConfig.getAnonAccessList()) || !anonAccessConfig.getAnonAccessList().contains(request.getRequestURI())) {
@@ -82,4 +88,5 @@ public class TokenFilter extends OncePerRequestFilter {
 
         //响应处理
     }
+
 }
